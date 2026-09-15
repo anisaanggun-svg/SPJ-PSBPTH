@@ -6,9 +6,14 @@ import { formatRupiahManual } from '../utils/formatCurrency';
 import { getPejabatByRole } from './masterPejabatService';
 
 async function fetchTemplate(templateName: string): Promise<ArrayBuffer> {
-  const response = await fetch(`/templates/${templateName}`);
+  const url = `/templates/${templateName}`;
+  console.log('[documentService] Fetching template:', url);
+  const response = await fetch(url);
+  console.log('[documentService] Template response:', response.status, response.statusText);
   if (!response.ok) {
-    throw new Error(`Template '${templateName}' not found. Please ensure the template file exists in public/templates/.`);
+    const text = await response.text().catch(() => '');
+    console.error('[documentService] Template fetch failed:', response.status, text);
+    throw new Error(`Template '${templateName}' not found (HTTP ${response.status}). Please ensure the template file exists in public/templates/.`);
   }
   return response.arrayBuffer();
 }
@@ -18,16 +23,21 @@ async function generateAndDownload(
   data: Record<string, unknown>,
   outputFilename: string,
 ): Promise<void> {
+  console.log('[documentService] Generating document:', templateName, 'with data keys:', Object.keys(data));
   const template = await fetchTemplate(templateName);
+  console.log('[documentService] Template fetched, size:', template.byteLength);
   const report = await createReport({
     template: new Uint8Array(template),
     data,
     cmdDelimiter: ['{', '}'],
   });
+  console.log('[documentService] Report created, size:', (report as any).byteLength);
   const blob = new Blob([report as any], {
     type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
+  console.log('[documentService] Blob created, size:', blob.size);
   saveAs(blob, outputFilename);
+  console.log('[documentService] Document saved:', outputFilename);
 }
 
 export async function generateKwitansi(

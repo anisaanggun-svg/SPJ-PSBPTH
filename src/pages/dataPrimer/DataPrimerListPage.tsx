@@ -146,12 +146,13 @@ export function DataPrimerListPage() {
   };
 
   const columns = [
-    { key: 'No', header: 'No', render: (item: DataPrimer) => item.No },
+    { key: 'No', header: 'No', render: (_item: DataPrimer, index: number) => index + 1 },
     { key: 'Nama_Pegawai', header: 'Nama Pegawai', render: (item: DataPrimer) => item.Nama_Pegawai },
     {
       key: 'Pada_tanggal',
       header: 'Tanggal Kegiatan',
       render: (item: DataPrimer) => {
+        if (!item.Pada_tanggal) return '-';
         try {
           return formatTanggalIndonesia(item.Pada_tanggal);
         } catch {

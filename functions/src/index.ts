@@ -21,14 +21,14 @@ app.use(cors({ origin: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api/users', usersRouter);
-app.use('/api/pejabat', pejabatRouter);
-app.use('/api/rekap', rekapRouter);
-app.use('/api/data-primer', dataPrimerRouter);
+// Routes (WITHOUT /api prefix - handled by Firebase Hosting rewrite)
+app.use('/users', usersRouter);
+app.use('/pejabat', pejabatRouter);
+app.use('/rekap', rekapRouter);
+app.use('/data-primer', dataPrimerRouter);
 
 // Health check
-app.get('/api/health', (req: express.Request, res: express.Response) => {
+app.get('/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 

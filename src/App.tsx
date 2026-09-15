@@ -27,10 +27,11 @@ import { MasterPejabatPage } from './pages/admin/MasterPejabatPage';
 
 export default function App() {
   // Seed dev admin and sample data only in development mode
-  if (import.meta.env.DEV) {
-    seedDevAdmin();
-    seedDataPrimer(1, 10);
-  }
+  // DISABLED: seedDevAdmin overwrites user profile with .env values
+  // if (import.meta.env.DEV) {
+  //   seedDevAdmin();
+  //   seedDataPrimer(1, 10);
+  // }
 
   return (
     <Router>

@@ -1,8 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { dbAdmin } from '../lib/firebaseAdmin';
 import { authMiddleware, requireRole } from '../middleware/auth';
-import type { DataPrimer, MasterPejabat } from '../../../src/types';
-import { generateKwitansi } from '../lib/generateKwitansi';
+import type { DataPrimer } from '../../../src/types';
 
 const router = Router();
 
@@ -144,56 +143,6 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'staf'), async (req: 
   } catch (error: any) {
     console.error('[DataPrimer/DELETE] ERROR:', error.message, error.code);
     res.status(500).json({ error: error.message, code: error.code });
-  }
-});
-
-// GET /api/data-primer/:id/kwitansi - Generate dokumen kwitansi
-router.get('/:id/kwitansi', authMiddleware, async (req: Request, res: Response) => {
-  console.log('[DataPrimer/GET kwitansi] request received, id:', req.params.id);
-  try {
-    const { id } = req.params;
-    const doc = await dbAdmin.collection(COLLECTION).doc(id).get();
-    if (!doc.exists) {
-      res.status(404).json({ error: 'Data primer tidak ditemukan' });
-      return;
-    }
-    const dataPrimer = { id: doc.id, ...doc.data() } as DataPrimer;
-
-    const ppkSnap = await dbAdmin
-      .collection('Master_Pejabat')
-      .where('role', '==', 'ppk')
-      .where('wilayah_kerja', '==', dataPrimer.Wilayah_Kerja)
-      .where('aktif', '==', true)
-      .limit(1)
-      .get();
-    const bendaharaSnap = await dbAdmin
-      .collection('Master_Pejabat')
-      .where('role', '==', 'bendahara')
-      .where('wilayah_kerja', '==', dataPrimer.Wilayah_Kerja)
-      .where('aktif', '==', true)
-      .limit(1)
-      .get();
-
-    if (ppkSnap.empty || bendaharaSnap.empty) {
-      res.status(400).json({ error: 'PPK atau Bendahara belum diatur di Master Pejabat untuk wilayah kerja ini' });
-      return;
-    }
-
-    const ppk = ppkSnap.docs[0].data() as MasterPejabat;
-    const bendahara = bendaharaSnap.docs[0].data() as MasterPejabat;
-
-    // TODO: ganti noBukti & nomorDIPA sesuai sumber data kamu (input manual, counter, atau .env)
-    const noBukti = (req.query.no_bukti as string) || '';
-    const nomorDIPA = process.env.NOMOR_DIPA || '018.03.3.059106/2026';
-
-    const buffer = await generateKwitansi(dataPrimer, ppk, bendahara, noBukti, nomorDIPA);
-
-    res.setHeader('Content-Disposition', `attachment; filename=kwitansi-${id}.docx`);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    res.send(buffer);
-  } catch (error: any) {
-    console.error('[DataPrimer/GET kwitansi] ERROR:', error.message);
-    res.status(500).json({ error: error.message });
   }
 });
 

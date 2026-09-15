@@ -10,14 +10,27 @@ const NAMA_HARI = [
   'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu',
 ];
 
-export function toDate(value: Timestamp | Date | string): Date {
+export function toDate(value: Timestamp | Date | string | { _seconds: number; _nanoseconds?: number } | null | undefined): Date {
+  console.log('[toDate] Received value:', value, 'type:', typeof value);
+  if (!value) {
+    console.log('[toDate] Value is null/undefined');
+    return new Date(NaN);
+  }
   if (value instanceof Timestamp) {
+    console.log('[toDate] Matched Timestamp instance');
     return value.toDate();
   }
   if (value instanceof Date) {
+    console.log('[toDate] Matched Date instance');
     return value;
   }
-  return new Date(value);
+  // Handle plain Firestore Timestamp object (serialized from backend)
+  if (typeof value === 'object' && '_seconds' in value) {
+    console.log('[toDate] Matched plain Firestore Timestamp object');
+    return new Date(value._seconds * 1000);
+  }
+  console.log('[toDate] Falling back to new Date(value)');
+  return new Date(value as string | number | Date);
 }
 
 export function formatTanggalIndonesia(value: Timestamp | Date | string): string {

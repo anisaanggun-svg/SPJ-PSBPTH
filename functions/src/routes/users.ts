@@ -132,34 +132,4 @@ router.patch('/:uid', authMiddleware, requireRole('admin'), async (req: Request,
   }
 });
 
-// DELETE /api/users/:uid - Delete user (admin only)
-router.delete('/:uid', authMiddleware, requireRole('admin'), async (req: Request, res: Response) => {
-  try {
-    const { uid } = req.params;
-    const adminUser = (req as any).user;
-
-    // Self-protection: admin cannot delete themselves
-    if (uid === adminUser.id) {
-      res.status(403).json({ error: 'Anda tidak dapat menghapus akun Anda sendiri' });
-      return;
-    }
-
-    // Delete from Firestore
-    await dbAdmin.collection(COLLECTION).doc(uid).delete();
-
-    // Delete from Firebase Auth (optional, but recommended for cleanup)
-    try {
-      await authAdmin.deleteUser(uid);
-    } catch (authError: any) {
-      console.warn('[Users/DELETE] Auth user deletion failed (may not exist):', authError.message);
-    }
-
-    console.log('[Users/DELETE] success, uid:', uid);
-    res.json({ success: true });
-  } catch (error: any) {
-    console.error('[Users/DELETE] ERROR:', error.message, error.code);
-    res.status(500).json({ error: error.message, code: error.code });
-  }
-});
-
 export default router;

@@ -62,6 +62,14 @@ export async function rejectUser(uid: string): Promise<void> {
   });
 }
 
+export async function deleteUser(uid: string): Promise<void> {
+  const headers = await getAuthHeader();
+  await axios.delete(`${API_URL}/users/${uid}`, {
+    headers,
+    timeout: REQUEST_TIMEOUT,
+  });
+}
+
 // Master Pejabat Management
 export async function createPejabat(
   data: Omit<MasterPejabat, 'id'>,

@@ -6,7 +6,7 @@ export interface DataPrimer {
     Wilayah_Kerja: number;
     Berangkat_dari: string;
     Tujuan: string;
-    Pada_tanggal: Timestamp | Date;
+    Pada_tanggal: Timestamp | Date | string;
     Jabatan_Produsen: string;
     Nama_Produsen: string;
     NIP_Produsen: string | null;
@@ -20,8 +20,8 @@ export interface DataPrimer {
     Pangkat_dan_Golongan: string;
     Jabatan_Pegawai: string;
     Maksud_Perjalanan_Dinas: string;
-    Tanggal_Berangkat: Timestamp | Date;
-    Tanggal_Kembali: Timestamp | Date;
+    Tanggal_Berangkat: Timestamp | Date | string;
+    Tanggal_Kembali: Timestamp | Date | string;
     Kode_Kegiatan: string;
     Kategori_DL: 'Pendek' | 'Panjang';
     Jumlah_Uang: number;

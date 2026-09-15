@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { UserCheck, UserX, RefreshCw, Edit, Save, X } from 'lucide-react';
+import { UserCheck, UserX, RefreshCw, Edit, Save, X, Trash2 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Table } from '../../components/ui/Table';
 import { Button } from '../../components/ui/Button';
@@ -14,6 +14,7 @@ import {
   approveUser,
   rejectUser,
   updateUser,
+  deleteUser,
 } from '../../services/adminService';
 import { useAuth } from '../../contexts/AuthContext';
 import type { UserProfile } from '../../types';
@@ -54,6 +55,10 @@ export function UserManagementPage() {
   const [editTarget, setEditTarget] = useState<UserProfile | null>(null);
   const [editRole, setEditRole] = useState<'admin' | 'staf'>('staf');
   const [editWilayah, setEditWilayah] = useState<string>('1');
+
+  // Delete modal state (Tab 2)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<UserProfile | null>(null);
 
   // Filter state (Tab 2)
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -168,6 +173,34 @@ export function UserManagementPage() {
     }
   };
 
+  const openDeleteModal = (user: UserProfile) => {
+    setDeleteTarget(user);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    // Self-protection: admin cannot delete themselves
+    if (deleteTarget.uid === currentUserProfile?.uid) {
+      toast('error', 'Anda tidak dapat menghapus akun Anda sendiri');
+      return;
+    }
+
+    setProcessingUid(deleteTarget.uid);
+    try {
+      await deleteUser(deleteTarget.uid);
+      toast('success', `User ${deleteTarget.nama} berhasil dihapus`);
+      setDeleteModalOpen(false);
+      fetchAllUsers();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast('error', error?.response?.data?.error || 'Gagal hapus user');
+    } finally {
+      setProcessingUid(null);
+    }
+  };
+
   const filteredUsers =
     statusFilter === 'all'
       ? allUsers
@@ -262,18 +295,33 @@ export function UserManagementPage() {
       render: (item: UserProfile) => {
         const isSelf = item.uid === currentUserProfile?.uid;
         const canEdit = item.status === 'approved' && !isSelf;
-        return canEdit ? (
-          <Button
-            size="sm"
-            icon={<Edit className="h-4 w-4" />}
-            onClick={() => openEditModal(item)}
-          >
-            Edit
-          </Button>
-        ) : isSelf ? (
-          <Badge variant="info">Anda</Badge>
-        ) : (
-          <span className="text-xs text-gray-400">—</span>
+        return (
+          <div className="flex items-center gap-1">
+            {canEdit ? (
+              <Button
+                size="sm"
+                icon={<Edit className="h-4 w-4" />}
+                onClick={() => openEditModal(item)}
+              >
+                Edit
+              </Button>
+            ) : isSelf ? (
+              <Badge variant="info">Anda</Badge>
+            ) : (
+              <span className="text-xs text-gray-400">—</span>
+            )}
+            {!isSelf && item.status === 'approved' && (
+              <Button
+                size="sm"
+                variant="danger"
+                icon={<Trash2 className="h-4 w-4" />}
+                loading={processingUid === item.uid}
+                onClick={() => openDeleteModal(item)}
+              >
+                Hapus
+              </Button>
+            )}
+          </div>
         );
       },
     },
@@ -446,6 +494,31 @@ export function UserManagementPage() {
               Simpan
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal (Tab 2) */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Konfirmasi Hapus User"
+        size="sm"
+      >
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Apakah Anda yakin ingin menghapus user{' '}
+          <span className="font-semibold">{deleteTarget?.nama}</span> ({deleteTarget?.email})?
+          <br />
+          <span className="text-sm text-red-600 dark:text-red-400">
+            Tindakan ini tidak dapat dibatalkan. Data user akan dihapus permanen dari Firestore dan Firebase Auth.
+          </span>
+        </p>
+        <div className="flex gap-3 justify-end">
+          <Button variant="secondary" onClick={() => setDeleteModalOpen(false)}>
+            Batal
+          </Button>
+          <Button variant="danger" loading={processingUid === deleteTarget?.uid} onClick={handleDelete}>
+            Hapus
+          </Button>
         </div>
       </Modal>
     </div>
