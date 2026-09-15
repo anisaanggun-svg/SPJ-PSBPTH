@@ -10,10 +10,9 @@ import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { toast } from '../../components/ui/Toast';
-import { getDataPrimer, deleteDataPrimer } from '../../services/dataPrimerService';
+import { getDataPrimer, deleteDataPrimer, downloadKwitansi } from '../../services/dataPrimerService';
 import { getActivePejabat } from '../../services/masterPejabatService';
 import {
-  generateKwitansi,
   generateRincianBiaya,
   generateDaftarPengeluaranRiil,
   generateSPPD,
@@ -127,7 +126,11 @@ export function DataPrimerListPage() {
           await generateSPPD(docModal.item, pejabatList);
           break;
         case 'kwitansi':
-          await generateKwitansi(docModal.item, pejabatList);
+          await downloadKwitansi(
+            docModal.item.id!,
+            docModal.item.Nama_Pegawai,
+            docModal.item.No_Urut_SPPD,
+          );
           break;
         case 'rincian':
           await generateRincianBiaya(docModal.item, pejabatList);

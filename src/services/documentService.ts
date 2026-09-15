@@ -40,38 +40,6 @@ async function generateAndDownload(
   console.log('[documentService] Document saved:', outputFilename);
 }
 
-export async function generateKwitansi(
-  data: DataPrimer,
-  pejabatList: MasterPejabat[],
-): Promise<void> {
-  const kpa = getPejabatByRole(pejabatList, 'kpa');
-  const ppk = getPejabatByRole(pejabatList, 'ppk');
-  const bendahara = getPejabatByRole(pejabatList, 'bendahara');
-
-  const templateData = {
-    Tahun_Kegiatan: data.Tahun_Kegiatan,
-    Kode_Kegiatan: data.Kode_Kegiatan,
-    Jumlah_Uang: formatRupiahManual(data.Jumlah_Uang),
-    Terbilang: data.Terbilang,
-    Nomor_SPT: data.Nomor_SPT,
-    No_Urut_SPPD: data.No_Urut_SPPD,
-    Bulan_Kegiatan: data.Bulan_Kegiatan,
-    Pada_tanggal: formatTanggalIndonesia(data.Pada_tanggal),
-    Nama_Pegawai: data.Nama_Pegawai,
-    NIP_Pegawai: data.NIP_Pegawai,
-    KPA_Nama: kpa?.nama || '',
-    KPA_NIP: kpa?.nip || '',
-    KPA_Jabatan: kpa?.jabatan_lengkap || '',
-    PPK_Nama: ppk?.nama || '',
-    PPK_NIP: ppk?.nip || '',
-    PPK_Jabatan: ppk?.jabatan_lengkap || '',
-    Bendahara_Nama: bendahara?.nama || '',
-    Bendahara_NIP: bendahara?.nip || '',
-  };
-
-  await generateAndDownload('kwitansi.docx', templateData, `Kwitansi_${data.Nama_Pegawai}_${data.No_Urut_SPPD}.docx`);
-}
-
 export async function generateRincianBiaya(
   data: DataPrimer,
   pejabatList: MasterPejabat[],

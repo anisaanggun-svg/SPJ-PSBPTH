@@ -6,10 +6,9 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { toast } from '../../components/ui/Toast';
-import { getDataPrimer } from '../../services/dataPrimerService';
+import { getDataPrimer, downloadKwitansi } from '../../services/dataPrimerService';
 import { getActivePejabat } from '../../services/masterPejabatService';
 import {
-  generateKwitansi,
   generateRincianBiaya,
   generateDaftarPengeluaranRiil,
   generateSPPD,
@@ -58,7 +57,7 @@ export function DocumentGeneratePage() {
           await generateSPPD(data, pejabatList);
           break;
         case 'kwitansi':
-          await generateKwitansi(data, pejabatList);
+          await downloadKwitansi(data.id!, data.Nama_Pegawai, data.No_Urut_SPPD);
           break;
         case 'rincian':
           await generateRincianBiaya(data, pejabatList);

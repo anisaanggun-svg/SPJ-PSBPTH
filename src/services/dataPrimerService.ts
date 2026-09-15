@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { saveAs } from 'file-saver';
 import { auth } from '../lib/firebase';
 import type { DataPrimer } from '../types';
 
@@ -57,4 +58,24 @@ export async function deleteDataPrimer(id: string): Promise<void> {
     headers,
     timeout: REQUEST_TIMEOUT,
   });
+}
+
+export async function downloadKwitansi(
+  id: string,
+  namaPegawai: string,
+  noUrutSPPD: number | string,
+): Promise<void> {
+  const headers = await getAuthHeader();
+  const response = await axios.get(`${API_URL}/data-primer/${id}/kwitansi`, {
+    headers,
+    timeout: REQUEST_TIMEOUT,
+    responseType: 'blob',
+  });
+
+  const blob = new Blob([response.data], {
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  });
+
+  const filename = `Kwitansi_${namaPegawai}_${noUrutSPPD}.docx`;
+  saveAs(blob, filename);
 }
