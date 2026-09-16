@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { dbAdmin } from '../lib/firebaseAdmin';
 import { authMiddleware, requireRole } from '../middleware/auth';
-import type { MasterPejabat } from '../../../src/types';
+import type { MasterPejabat } from '../types';
 
 const router = Router();
 

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { dbAdmin } from '../lib/firebaseAdmin';
 import { authMiddleware, requireRole } from '../middleware/auth';
-import type { DataPrimer } from '../../../src/types';
+import type { DataPrimer } from '../types';
 
 const router = Router();
 

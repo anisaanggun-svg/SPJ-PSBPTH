@@ -60,7 +60,16 @@ export async function generateKwitansi(
   nomorDIPA: string
 ): Promise<Buffer> {
   const templatePath = path.join(__dirname, '../templates/kwitansi.docx');
+  console.log('[KWITANSI] template path:', templatePath);
+  
+  if (!fs.existsSync(templatePath)) {
+    console.error('[KWITANSI] ERROR: Template file not found at:', templatePath);
+    throw new Error(`Template kwitansi tidak ditemukan: ${templatePath}`);
+  }
+  console.log('[KWITANSI] template exists: true');
+  
   const template = fs.readFileSync(templatePath);
+  console.log('[KWITANSI] template loaded, size:', template.length);
 
   const report = await createReport({
     template,
@@ -85,5 +94,6 @@ export async function generateKwitansi(
     },
   });
 
+  console.log('[KWITANSI] report generated, size:', (report as any).length);
   return Buffer.from(report);
 }

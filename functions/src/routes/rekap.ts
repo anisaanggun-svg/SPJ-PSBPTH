@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { dbAdmin } from '../lib/firebaseAdmin';
 import { authMiddleware } from '../middleware/auth';
-import type { RekapModel3Item } from '../../../src/types';
+import type { RekapModel3Item } from '../types';
 
 const router = Router();
 

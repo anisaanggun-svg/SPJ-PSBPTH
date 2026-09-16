@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { authAdmin, dbAdmin } from '../lib/firebaseAdmin';
-import type { UserProfile } from '../../../src/types';
+import type { UserProfile } from '../types';
 
 async function verifyToken(token: string): Promise<{ uid: string }> {
   // Try Admin SDK first

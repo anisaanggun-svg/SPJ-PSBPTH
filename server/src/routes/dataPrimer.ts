@@ -149,15 +149,17 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'staf'), async (req: 
 
 // GET /api/data-primer/:id/kwitansi - Generate dokumen kwitansi
 router.get('/:id/kwitansi', authMiddleware, async (req: Request, res: Response) => {
-  console.log('[DataPrimer/GET kwitansi] request received, id:', req.params.id);
+  console.log('[KWITANSI] request received, id:', req.params.id);
   try {
     const { id } = req.params;
     const doc = await dbAdmin.collection(COLLECTION).doc(id).get();
     if (!doc.exists) {
+      console.log('[KWITANSI] ERROR: Data primer tidak ditemukan, id:', id);
       res.status(404).json({ error: 'Data primer tidak ditemukan' });
       return;
     }
     const dataPrimer = { id: doc.id, ...doc.data() } as DataPrimer;
+    console.log('[KWITANSI] data primer found:', dataPrimer.Nama_Pegawai, 'Wilayah_Kerja:', dataPrimer.Wilayah_Kerja);
 
     const ppkSnap = await dbAdmin
       .collection('Master_Pejabat')
@@ -174,7 +176,12 @@ router.get('/:id/kwitansi', authMiddleware, async (req: Request, res: Response) 
       .limit(1)
       .get();
 
+    console.log('[KWITANSI] wilayah kerja:', dataPrimer.Wilayah_Kerja);
+    console.log('[KWITANSI] PPK found:', ppkSnap.empty ? 'NO' : 'YES', ppkSnap.empty ? '' : ppkSnap.docs[0].data().nama);
+    console.log('[KWITANSI] Bendahara found:', bendaharaSnap.empty ? 'NO' : 'YES', bendaharaSnap.empty ? '' : bendaharaSnap.docs[0].data().nama);
+
     if (ppkSnap.empty || bendaharaSnap.empty) {
+      console.log('[KWITANSI] ERROR: PPK atau Bendahara tidak ditemukan untuk wilayah kerja:', dataPrimer.Wilayah_Kerja);
       res.status(400).json({ error: 'PPK atau Bendahara belum diatur di Master Pejabat untuk wilayah kerja ini' });
       return;
     }
@@ -186,13 +193,15 @@ router.get('/:id/kwitansi', authMiddleware, async (req: Request, res: Response) 
     const noBukti = (req.query.no_bukti as string) || '';
     const nomorDIPA = process.env.NOMOR_DIPA || '018.03.3.059106/2026';
 
+    console.log('[KWITANSI] generating document...');
     const buffer = await generateKwitansi(dataPrimer, ppk, bendahara, noBukti, nomorDIPA);
+    console.log('[KWITANSI] generation success, buffer size:', buffer.length);
 
     res.setHeader('Content-Disposition', `attachment; filename=kwitansi-${id}.docx`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.send(buffer);
   } catch (error: any) {
-    console.error('[DataPrimer/GET kwitansi] ERROR:', error.message);
+    console.error('[KWITANSI] ERROR:', error.message, error.stack);
     res.status(500).json({ error: error.message });
   }
 });
