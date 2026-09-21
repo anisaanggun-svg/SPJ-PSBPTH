@@ -9,6 +9,9 @@ const COLLECTION = 'Master_Pejabat';
 const LEGACY_COLLECTION = 'master_pejabat';
 
 async function getPejabatDocuments(wilayahKerja?: number): Promise<any[]> {
+  if (!dbAdmin) {
+    throw new Error('Firestore is not available');
+  }
   const collections = [dbAdmin.collection(COLLECTION), dbAdmin.collection(LEGACY_COLLECTION)];
   const snapshots = await Promise.all(
     collections.map(async (collectionRef) => {
@@ -28,6 +31,9 @@ async function getPejabatDocuments(wilayahKerja?: number): Promise<any[]> {
 }
 
 async function findPejabatDocument(id: string): Promise<{ collectionRef: any; doc: any } | null> {
+  if (!dbAdmin) {
+    throw new Error('Firestore is not available');
+  }
   const canonicalDoc = await dbAdmin.collection(COLLECTION).doc(id).get();
   if (canonicalDoc.exists) {
     return { collectionRef: dbAdmin.collection(COLLECTION), doc: canonicalDoc };
@@ -69,6 +75,10 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
 router.post('/', authMiddleware, requireRole('admin'), async (req: Request, res: Response) => {
   console.log('[Pejabat/POST] request received, body keys:', Object.keys(req.body || {}));
   try {
+    if (!dbAdmin) {
+      res.status(503).json({ error: 'Firestore is not available. Check Firebase configuration.' });
+      return;
+    }
     const data = req.body as Omit<MasterPejabat, 'id'>;
     const docRef = await dbAdmin.collection(COLLECTION).add({
       ...data,

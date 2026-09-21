@@ -6,12 +6,14 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { toast } from '../../components/ui/Toast';
+import { RincianBiayaGenerationModal } from '../../components/RincianBiayaGenerationModal';
 import { getDataPrimer, downloadKwitansi } from '../../services/dataPrimerService';
 import { getActivePejabat } from '../../services/masterPejabatService';
 import {
   generateRincianBiaya,
   generateDaftarPengeluaranRiil,
   generateSPPD,
+  type RincianBiayaGenerationOptions,
 } from '../../services/documentService';
 import { formatTanggalIndonesia } from '../../utils/dateHelpers';
 import { formatRupiah } from '../../utils/formatCurrency';
@@ -25,6 +27,7 @@ export function DocumentGeneratePage() {
   const [pejabatList, setPejabatList] = useState<MasterPejabat[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
+  const [rincianModalOpen, setRincianModalOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -50,6 +53,12 @@ export function DocumentGeneratePage() {
 
   const handleGenerate = async (type: string) => {
     if (!data) return;
+
+    if (type === 'rincian') {
+      setRincianModalOpen(true);
+      return;
+    }
+
     setGenerating(type);
     try {
       switch (type) {
@@ -59,13 +68,26 @@ export function DocumentGeneratePage() {
         case 'kwitansi':
           await downloadKwitansi(data.id!, data.Nama_Pegawai, data.No_Urut_SPPD);
           break;
-        case 'rincian':
-          await generateRincianBiaya(data, pejabatList);
-          break;
         case 'pengeluaran':
           await generateDaftarPengeluaranRiil(data, pejabatList);
           break;
       }
+      toast('success', 'Dokumen berhasil di-generate dan diunduh');
+    } catch (error) {
+      console.error('Error generating document:', error);
+      toast('error', 'Gagal generate dokumen. Pastikan template tersedia di folder public/templates/');
+    } finally {
+      setGenerating(null);
+    }
+  };
+
+  const handleGenerateRincian = async (options: RincianBiayaGenerationOptions) => {
+    if (!data) return;
+
+    setGenerating('rincian');
+    try {
+      await generateRincianBiaya(data, pejabatList, options);
+      setRincianModalOpen(false);
       toast('success', 'Dokumen berhasil di-generate dan diunduh');
     } catch (error) {
       console.error('Error generating document:', error);
@@ -186,6 +208,14 @@ export function DocumentGeneratePage() {
           </Card>
         ))}
       </div>
+
+      <RincianBiayaGenerationModal
+        isOpen={rincianModalOpen}
+        data={data}
+        onClose={() => setRincianModalOpen(false)}
+        onGenerate={handleGenerateRincian}
+        loading={generating === 'rincian'}
+      />
     </div>
   );
 }

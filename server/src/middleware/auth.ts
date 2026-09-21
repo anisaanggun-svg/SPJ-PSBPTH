@@ -13,13 +13,12 @@ async function verifyToken(token: string): Promise<{ uid: string }> {
     }
   }
 
-  console.log('[Auth] verifyToken: trying Admin SDK');
-  // Fallback: verify using Firebase Auth REST API
   console.log('[Auth] verifyToken: Admin SDK failed, trying REST API');
+  // Fallback: verify using Firebase Auth REST API (Identity Toolkit)
   const projectId = process.env.FIREBASE_PROJECT_ID || 'sppd-psbtph';
   const apiKey = process.env.FIREBASE_API_KEY || 'AIzaSyD9D69Bjxji2t40YlQDSkEawBFpMl2bba4';
   const response = await fetch(
-    `https://www.googleapis.com/identityplatform/v3/projects/${projectId}/verifyIdToken?key=${apiKey}`,
+    `https://www.googleapis.com/identitytoolkit/v3/projects/${projectId}:verifyIdToken?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

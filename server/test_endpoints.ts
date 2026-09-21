@@ -18,7 +18,7 @@ async function main() {
 
   // 2. Exchange custom token for ID token via REST API
   const exchangeRes = await axios.post(
-    `https://identityplatform.googleapis.com/identitytoolkit/v3/projects/${credentials.project_id}:verifyCustomToken?key=${API_KEY}`,
+    `https://identitytoolkit.googleapis.com/v3/projects/${credentials.project_id}:signInWithCustomToken?key=${API_KEY}`,
     { customToken, returnSecureToken: true }
   );
   const idToken = exchangeRes.data.idToken;
@@ -26,7 +26,17 @@ async function main() {
 
   const headers = { Authorization: `Bearer ${idToken}` };
 
-  // 3. Test GET /api/data-primer
+  // 3. Test GET /api/users/me
+  console.log('\n=== GET /api/users/me ===');
+  try {
+    const res = await axios.get(`${BASE}/users/me`, { headers });
+    console.log('Status:', res.status);
+    console.log('User data:', JSON.stringify(res.data, null, 2));
+  } catch (e: any) {
+    console.log('ERROR:', e.response?.status, e.response?.data);
+  }
+
+  // 4. Test GET /api/data-primer
   console.log('\n=== GET /api/data-primer ===');
   try {
     const res = await axios.get(`${BASE}/data-primer`, {

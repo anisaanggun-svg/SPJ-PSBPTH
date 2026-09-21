@@ -57,6 +57,10 @@ function serializeDataPrimer(item: any): DataPrimer {
 router.get('/', authMiddleware, async (req: Request, res: Response) => {
   console.log('[DataPrimer/GET] request received, query:', req.query);
   try {
+    if (!dbAdmin) {
+      res.status(503).json({ error: 'Firestore is not available. Check Firebase configuration.' });
+      return;
+    }
     const rawWilayahKerja = req.query.wilayah_kerja;
     const rawTahunData = req.query.tahun_data;
     const wilayahKerja = rawWilayahKerja ? parseInt(rawWilayahKerja as string, 10) : null;
@@ -99,6 +103,10 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
 router.post('/', authMiddleware, requireRole('admin', 'staf'), async (req: Request, res: Response) => {
   console.log('[DataPrimer/POST] request received, body keys:', Object.keys(req.body || {}));
   try {
+    if (!dbAdmin) {
+      res.status(503).json({ error: 'Firestore is not available. Check Firebase configuration.' });
+      return;
+    }
     const data = convertTimestamps(req.body);
     const docRef = await dbAdmin.collection(COLLECTION).add({
       ...data,
@@ -119,6 +127,10 @@ router.post('/', authMiddleware, requireRole('admin', 'staf'), async (req: Reque
 router.put('/:id', authMiddleware, requireRole('admin', 'staf'), async (req: Request, res: Response) => {
   console.log('[DataPrimer/PUT] request received, id:', req.params.id);
   try {
+    if (!dbAdmin) {
+      res.status(503).json({ error: 'Firestore is not available. Check Firebase configuration.' });
+      return;
+    }
     const { id } = req.params;
     const data = convertTimestamps(req.body);
     await dbAdmin.collection(COLLECTION).doc(id).update({
@@ -137,6 +149,10 @@ router.put('/:id', authMiddleware, requireRole('admin', 'staf'), async (req: Req
 router.delete('/:id', authMiddleware, requireRole('admin', 'staf'), async (req: Request, res: Response) => {
   console.log('[DataPrimer/DELETE] request received, id:', req.params.id);
   try {
+    if (!dbAdmin) {
+      res.status(503).json({ error: 'Firestore is not available. Check Firebase configuration.' });
+      return;
+    }
     const { id } = req.params;
     await dbAdmin.collection(COLLECTION).doc(id).delete();
     console.log('[DataPrimer/DELETE] success, id:', id);
@@ -151,6 +167,10 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'staf'), async (req: 
 router.get('/:id/kwitansi', authMiddleware, async (req: Request, res: Response) => {
   console.log('[KWITANSI] request received, id:', req.params.id);
   try {
+    if (!dbAdmin) {
+      res.status(503).json({ error: 'Firestore is not available. Check Firebase configuration.' });
+      return;
+    }
     const { id } = req.params;
     const doc = await dbAdmin.collection(COLLECTION).doc(id).get();
     if (!doc.exists) {

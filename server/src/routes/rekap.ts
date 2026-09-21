@@ -31,6 +31,10 @@ function toIsoString(value: any): string {
 router.get('/', authMiddleware, async (req: Request, res: Response) => {
   console.log('[Rekap/GET] request received, query:', req.query);
   try {
+    if (!dbAdmin) {
+      res.status(503).json({ error: 'Firestore is not available. Check Firebase configuration.' });
+      return;
+    }
     const rawWilayahKerja = req.query.wilayah_kerja;
     const rawTahunData = req.query.tahun_data;
     const bulan = typeof req.query.bulan === 'string' ? req.query.bulan : '';

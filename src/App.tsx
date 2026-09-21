@@ -1,8 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { seedDevAdmin } from './utils/seedDevAdmin';
-import { seedDataPrimer } from './utils/seedDataPrimer';
 
 // Auth Pages
 import { LoginPage } from './pages/auth/LoginPage';

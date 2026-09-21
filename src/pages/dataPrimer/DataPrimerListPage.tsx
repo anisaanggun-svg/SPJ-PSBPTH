@@ -10,12 +10,14 @@ import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { toast } from '../../components/ui/Toast';
+import { RincianBiayaGenerationModal } from '../../components/RincianBiayaGenerationModal';
 import { getDataPrimer, deleteDataPrimer, downloadKwitansi } from '../../services/dataPrimerService';
 import { getActivePejabat } from '../../services/masterPejabatService';
 import {
   generateRincianBiaya,
   generateDaftarPengeluaranRiil,
   generateSPPD,
+  type RincianBiayaGenerationOptions,
 } from '../../services/documentService';
 import { formatTanggalIndonesia } from '../../utils/dateHelpers';
 import { formatRupiah } from '../../utils/formatCurrency';
@@ -37,6 +39,7 @@ export function DataPrimerListPage() {
     open: false,
     item: null,
   });
+  const [rincianModalOpen, setRincianModalOpen] = useState(false);
   const [generatingDoc, setGeneratingDoc] = useState(false);
 
   const yearOptions = Array.from({ length: 5 }, (_, i) => {
@@ -119,6 +122,12 @@ export function DataPrimerListPage() {
 
   const handleGenerateDoc = async (type: string) => {
     if (!docModal.item) return;
+
+    if (type === 'rincian') {
+      setRincianModalOpen(true);
+      return;
+    }
+
     setGeneratingDoc(true);
     try {
       switch (type) {
@@ -132,13 +141,28 @@ export function DataPrimerListPage() {
             docModal.item.No_Urut_SPPD,
           );
           break;
-        case 'rincian':
-          await generateRincianBiaya(docModal.item, pejabatList);
-          break;
         case 'pengeluaran':
           await generateDaftarPengeluaranRiil(docModal.item, pejabatList);
           break;
       }
+      setDocModal({ open: false, item: null });
+      toast('success', 'Dokumen berhasil di-generate');
+    } catch (error) {
+      console.error('Error generating document:', error);
+      toast('error', 'Gagal generate dokumen. Pastikan template sudah tersedia.');
+    } finally {
+      setGeneratingDoc(false);
+    }
+  };
+
+  const handleGenerateRincian = async (options: RincianBiayaGenerationOptions) => {
+    if (!docModal.item) return;
+
+    setGeneratingDoc(true);
+    try {
+      await generateRincianBiaya(docModal.item, pejabatList, options);
+      setDocModal({ open: false, item: null });
+      setRincianModalOpen(false);
       toast('success', 'Dokumen berhasil di-generate');
     } catch (error) {
       console.error('Error generating document:', error);
@@ -308,6 +332,14 @@ export function DataPrimerListPage() {
           ))}
         </div>
       </Modal>
+
+      <RincianBiayaGenerationModal
+        isOpen={rincianModalOpen}
+        data={docModal.item}
+        onClose={() => setRincianModalOpen(false)}
+        onGenerate={handleGenerateRincian}
+        loading={generatingDoc}
+      />
     </div>
   );
 }
