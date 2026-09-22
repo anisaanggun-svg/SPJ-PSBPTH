@@ -18,6 +18,7 @@ export function DashboardPage() {
 
   const [tahun, setTahun] = useState(currentYear.toString());
   const [data, setData] = useState<DataPrimer[]>([]);
+  const [totalSPPD, setTotalSPPD] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,7 +27,8 @@ export function DashboardPage() {
       setLoading(true);
       try {
         const result = await getDataPrimer(userProfile.wilayah_kerja, parseInt(tahun));
-        setData(result);
+        setData(result.data);
+        setTotalSPPD(result.total);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -37,7 +39,7 @@ export function DashboardPage() {
   }, [tahun, userProfile]);
 
   const stats = useMemo(() => {
-    const total = data.length;
+    const total = totalSPPD;
     const totalBiaya = data.reduce((sum, item) => sum + (item.Jumlah_Uang || 0), 0);
     const currentMonth = new Date().getMonth();
     const perjalananBulanIni = data.filter((item) => {
@@ -48,7 +50,7 @@ export function DashboardPage() {
   }, [data]);
 
   const chartData = useMemo(() => {
-    return BULAN_ID.map((month, index) => ({
+    return BULAN_ID.map((month) => ({
       month,
       value: Math.floor(Math.random() * 15) + 3,
     }));

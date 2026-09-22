@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, FileDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -24,6 +24,8 @@ import { formatTanggalIndonesia } from '../../utils/dateHelpers';
 import { formatRupiah } from '../../utils/formatCurrency';
 import type { DataPrimer, MasterPejabat } from '../../types';
 
+const PAGE_LIMIT = 10;
+
 export function DataPrimerListPage() {
   const { userProfile } = useAuth();
   const navigate = useNavigate();
@@ -43,6 +45,9 @@ export function DataPrimerListPage() {
   const [rincianModalOpen, setRincianModalOpen] = useState(false);
   const [sppdModalOpen, setSppdModalOpen] = useState(false);
   const [generatingDoc, setGeneratingDoc] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [total, setTotal] = useState(0);
 
   const yearOptions = Array.from({ length: 5 }, (_, i) => {
     const y = currentYear - i;
@@ -50,14 +55,14 @@ export function DataPrimerListPage() {
   });
 
   useEffect(() => {
-    fetchData();
+    fetchData(1);
   }, [tahun, userProfile]);
 
   useEffect(() => {
     fetchPejabat();
   }, [userProfile]);
 
-  const fetchData = async () => {
+  const fetchData = async (page?: number) => {
     setLoading(true);
     if (!userProfile) {
       setLoading(false);
@@ -71,8 +76,15 @@ export function DataPrimerListPage() {
       return;
     }
     try {
-      const result = await getDataPrimer(userProfile.wilayah_kerja, parseInt(tahun));
-      setData(result);
+      const result = await getDataPrimer(
+        userProfile.wilayah_kerja,
+        parseInt(tahun),
+        page ?? currentPage,
+        PAGE_LIMIT,
+      );
+      setData(result.data);
+      setTotal(result.total);
+      setTotalPages(result.totalPages);
     } catch (error: any) {
       console.error('Error fetching data:', error);
       // Provide more specific error message
@@ -192,7 +204,7 @@ export function DataPrimerListPage() {
   };
 
   const columns = [
-    { key: 'No', header: 'No', render: (_item: DataPrimer, index: number) => index + 1 },
+    { key: 'No', header: 'No', render: (_item: DataPrimer, index: number) => (currentPage - 1) * PAGE_LIMIT + index + 1 },
     { key: 'Nama_Pegawai', header: 'Nama Pegawai', render: (item: DataPrimer) => item.Nama_Pegawai },
     {
       key: 'Pada_tanggal',
@@ -271,7 +283,10 @@ export function DataPrimerListPage() {
         <div className="flex items-center gap-3">
           <Select
             value={tahun}
-            onChange={(e) => setTahun(e.target.value)}
+            onChange={(e) => {
+              setTahun(e.target.value);
+              setCurrentPage(1);
+            }}
             options={yearOptions}
             className="w-32"
           />
@@ -290,12 +305,65 @@ export function DataPrimerListPage() {
             <LoadingSpinner size="lg" />
           </div>
         ) : (
-          <Table
-            columns={columns}
-            data={data}
-            keyExtractor={(item) => item.id || String(item.No)}
-            emptyMessage="Belum ada data perjalanan dinas untuk tahun ini"
-          />
+          <>
+            <Table
+              columns={columns}
+              data={data}
+              keyExtractor={(item) => item.id || String(item.No)}
+              emptyMessage="Belum ada data perjalanan dinas untuk tahun ini"
+            />
+            {total > 0 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Menampilkan <span className="font-medium">{(currentPage - 1) * PAGE_LIMIT + 1}</span>–
+                  <span className="font-medium">{Math.min(currentPage * PAGE_LIMIT, total)}</span> dari{' '}
+                  <span className="font-medium">{total}</span> data
+                </p>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={<ChevronLeft className="h-4 w-4" />}
+                    disabled={currentPage <= 1}
+                    onClick={() => {
+                      const newPage = Math.max(1, currentPage - 1);
+                      setCurrentPage(newPage);
+                      fetchData(newPage);
+                    }}
+                  >
+                    Prev
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={page === currentPage ? 'primary' : 'secondary'}
+                      size="sm"
+                      onClick={() => {
+                        setCurrentPage(page);
+                        fetchData(page);
+                      }}
+                      className="min-w-[36px]"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={<ChevronRight className="h-4 w-4" />}
+                    disabled={currentPage >= totalPages}
+                    onClick={() => {
+                      const newPage = Math.min(totalPages, currentPage + 1);
+                      setCurrentPage(newPage);
+                      fetchData(newPage);
+                    }}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </Card>
 

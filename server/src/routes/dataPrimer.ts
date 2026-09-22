@@ -53,7 +53,7 @@ function serializeDataPrimer(item: any): DataPrimer {
   return result as DataPrimer;
 }
 
-// GET /api/data-primer?wilayah_kerja=&tahun_data=
+// GET /api/data-primer?wilayah_kerja=&tahun_data=&page=&limit=
 router.get('/', authMiddleware, async (req: Request, res: Response) => {
   console.log('[DataPrimer/GET] request received, query:', req.query);
   try {
@@ -63,8 +63,12 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     }
     const rawWilayahKerja = req.query.wilayah_kerja;
     const rawTahunData = req.query.tahun_data;
+    const rawPage = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const rawLimit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
     const wilayahKerja = rawWilayahKerja ? parseInt(rawWilayahKerja as string, 10) : null;
     const tahunData = rawTahunData ? parseInt(rawTahunData as string, 10) : null;
+    const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+    const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 10;
 
     if (!wilayahKerja || !Number.isFinite(wilayahKerja) || wilayahKerja <= 0) {
       console.log('[DataPrimer/GET] ERROR: wilayah_kerja is required and must be a positive number');
@@ -78,7 +82,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     }
 
     // Filter only by wilayah in Firestore to avoid a composite index requirement.
-    // Tahun_Data filtering and No sorting are performed in application memory.
+    // Tahun_Data filtering and sorting are performed in application memory.
     const snapshot = await dbAdmin
       .collection(COLLECTION)
       .where('Wilayah_Kerja', '==', wilayahKerja)
@@ -90,9 +94,26 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
         data.push(item);
       }
     });
-    data.sort((a, b) => (a.No || 0) - (b.No || 0));
-    console.log('[DataPrimer/GET] success, count:', data.length, 'filteredByYear:', tahunData ?? 'none');
-    res.json(data);
+    // Sort descending: latest data (most recent createdAt) first
+    data.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.createdAt?.toDate?.() || new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    const total = data.length;
+    const totalPages = Math.ceil(total / limit);
+    const startIdx = (page - 1) * limit;
+    const paginatedData = data.slice(startIdx, startIdx + limit);
+
+    console.log('[DataPrimer/GET] success, count:', total, 'page:', page, 'limit:', limit, 'totalPages:', totalPages, 'filteredByYear:', tahunData ?? 'none');
+    res.json({
+      data: paginatedData,
+      total,
+      page,
+      limit,
+      totalPages,
+    });
   } catch (error: any) {
     console.error('[DataPrimer/GET] ERROR:', error.message, error.code);
     res.status(500).json({ error: error.message, code: error.code });

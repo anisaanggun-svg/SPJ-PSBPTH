@@ -40,7 +40,7 @@ export function DocumentGeneratePage() {
         getDataPrimer(userProfile.wilayah_kerja),
         getActivePejabat(userProfile.wilayah_kerja),
       ]);
-      const found = allData.find((d) => d.id === id);
+      const found = allData.data.find((d) => d.id === id);
       setData(found || null);
       setPejabatList(pejabat);
     } catch (error) {

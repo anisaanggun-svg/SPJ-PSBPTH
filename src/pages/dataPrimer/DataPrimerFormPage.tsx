@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { toast } from '../../components/ui/Toast';
 import { addDataPrimer, updateDataPrimer, getDataPrimer } from '../../services/dataPrimerService';
+import type { DataPrimer } from '../../types';
 import { KODE_KOMODITAS, KATEGORI_DL, NAMA_PEGAWAI, KEGIATAN, TINGKAT_PERJALANAN, BULAN_ROMAWI } from '../../constants/masterData';
 import { terbilang } from '../../utils/terbilang';
 import { formatDateForInput } from '../../utils/dateHelpers';
@@ -59,8 +60,8 @@ export function DataPrimerFormPage() {
   const fetchExistingData = async () => {
     if (!userProfile || !id) return;
     try {
-      const allData = await getDataPrimer(userProfile.wilayah_kerja);
-      const existing = allData.find((d) => d.id === id);
+      const allData = await getDataPrimer(userProfile.wilayah_kerja, undefined, 1, 100000);
+      const existing = allData.data.find((d: DataPrimer) => d.id === id);
       if (existing) {
         setForm({
           No: existing.No,

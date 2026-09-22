@@ -12,16 +12,20 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Badge } from '../ui/Badge';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
 
 interface NavbarProps {
-  onMenuClick: () => void;
+  onToggleSidebar: () => void;
+  sidebarCollapsed: boolean;
 }
 
-export function Navbar({ onMenuClick }: NavbarProps) {
+export function Navbar({ onToggleSidebar, sidebarCollapsed }: NavbarProps) {
   const { userProfile, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,19 +43,25 @@ export function Navbar({ onMenuClick }: NavbarProps) {
     navigate('/login');
   };
 
+  const handleLogoutConfirm = () => {
+    setLogoutModalOpen(false);
+    handleLogout();
+  };
+
   return (
-    <header className="sticky top-0 z-30 border-b border-white/20 dark:border-white/10 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-emerald-500/20 dark:border-white/10 bg-emerald-600/90 dark:bg-gray-900/70 backdrop-blur-xl">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6">
         {/* Left: Menu button + Title */}
         <div className="flex items-center gap-3">
           <button
-            onClick={onMenuClick}
-            className="rounded-lg p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors lg:hidden"
+            onClick={onToggleSidebar}
+            className="rounded-lg p-2 text-white hover:bg-white/20 transition-colors"
+            title={sidebarCollapsed ? 'Buka Sidebar' : 'Tutup Sidebar'}
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="lg:hidden">
-            <h1 className="text-sm font-bold text-emerald-700 dark:text-emerald-400">SPPD App</h1>
+          <div className="hidden sm:block">
+            <h1 className="text-sm font-bold text-white">SPPD App</h1>
           </div>
         </div>
 
@@ -60,7 +70,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            className="rounded-lg p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+            className="rounded-lg p-2 text-white hover:bg-white/20 transition-colors"
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -70,15 +80,15 @@ export function Navbar({ onMenuClick }: NavbarProps) {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white hover:bg-white/20 transition-colors"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">
-                  <User className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/30">
+                  <User className="h-4 w-4 text-white" />
                 </div>
-                <span className="hidden sm:block font-medium">
+                <span className="hidden sm:block font-medium text-white">
                   {userProfile?.nama || userProfile?.email?.split('@')[0] || 'User'}
                 </span>
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4 text-white" />
               </button>
    
                {dropdownOpen && (
@@ -111,7 +121,10 @@ export function Navbar({ onMenuClick }: NavbarProps) {
                     Edit Profil
                   </button>
                   <button
-                    onClick={handleLogout}
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      setLogoutModalOpen(true);
+                    }}
                     className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
                   >
                     <LogOut className="h-4 w-4" />
@@ -123,6 +136,32 @@ export function Navbar({ onMenuClick }: NavbarProps) {
           </div>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        isOpen={logoutModalOpen}
+        onClose={() => setLogoutModalOpen(false)}
+        title="Konfirmasi Logout"
+        size="sm"
+      >
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
+          Apakah Anda yakin ingin keluar dari aplikasi?
+        </p>
+        <div className="flex justify-end gap-3">
+          <Button
+            variant="secondary"
+            onClick={() => setLogoutModalOpen(false)}
+          >
+            Batal
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleLogoutConfirm}
+          >
+            Ya, Logout
+          </Button>
+        </div>
+      </Modal>
     </header>
   );
 }

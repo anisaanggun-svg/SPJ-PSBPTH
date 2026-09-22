@@ -16,11 +16,19 @@ async function getAuthHeader(): Promise<Record<string, string>> {
 export async function getDataPrimer(
   wilayahKerja: number,
   tahunData?: number,
-): Promise<DataPrimer[]> {
+  page?: number,
+  limit?: number,
+): Promise<{ data: DataPrimer[]; total: number; page: number; limit: number; totalPages: number }> {
   const headers = await getAuthHeader();
   const params: Record<string, any> = { wilayah_kerja: wilayahKerja };
   if (tahunData) {
     params.tahun_data = tahunData;
+  }
+  if (page) {
+    params.page = page;
+  }
+  if (limit) {
+    params.limit = limit;
   }
   const response = await axios.get(`${API_URL}/data-primer`, {
     headers,
