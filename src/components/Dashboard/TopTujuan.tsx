@@ -1,4 +1,4 @@
-import { MapPin, ArrowUpRight } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 interface TopTujuanItem {
   kota: string;
@@ -41,9 +41,7 @@ export function TopTujuan({ data }: TopTujuanProps) {
           </div>
         ))}
       </div>
-      <button className="mt-4 flex w-full items-center justify-center gap-1 rounded-lg py-2 text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
-        Lihat Semua <ArrowUpRight className="h-3 w-3" />
-      </button>
+
     </div>
   );
 }

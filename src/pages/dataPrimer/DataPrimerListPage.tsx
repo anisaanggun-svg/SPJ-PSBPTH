@@ -11,6 +11,7 @@ import { Modal } from '../../components/ui/Modal';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { toast } from '../../components/ui/Toast';
 import { RincianBiayaGenerationModal } from '../../components/RincianBiayaGenerationModal';
+import { SPPDGenerationModal } from '../../components/SPPDGenerationModal';
 import { getDataPrimer, deleteDataPrimer, downloadKwitansi } from '../../services/dataPrimerService';
 import { getActivePejabat } from '../../services/masterPejabatService';
 import {
@@ -40,6 +41,7 @@ export function DataPrimerListPage() {
     item: null,
   });
   const [rincianModalOpen, setRincianModalOpen] = useState(false);
+  const [sppdModalOpen, setSppdModalOpen] = useState(false);
   const [generatingDoc, setGeneratingDoc] = useState(false);
 
   const yearOptions = Array.from({ length: 5 }, (_, i) => {
@@ -128,12 +130,14 @@ export function DataPrimerListPage() {
       return;
     }
 
+    if (type === 'sppd') {
+      setSppdModalOpen(true);
+      return;
+    }
+
     setGeneratingDoc(true);
     try {
       switch (type) {
-        case 'sppd':
-          await generateSPPD(docModal.item, pejabatList);
-          break;
         case 'kwitansi':
           await downloadKwitansi(
             docModal.item.id!,
@@ -155,6 +159,21 @@ export function DataPrimerListPage() {
     }
   };
 
+  const handleGenerateSPPD = async (options: any) => {
+    if (!docModal.item) return;
+    setGeneratingDoc(true);
+    try {
+      await generateSPPD(docModal.item, pejabatList, options);
+      setDocModal({ open: false, item: null });
+      setSppdModalOpen(false);
+      toast('success', 'Dokumen berhasil di-generate');
+    } catch (error) {
+      console.error('Error generating document:', error);
+      toast('error', 'Gagal generate dokumen. Pastikan template sudah tersedia.');
+    } finally {
+      setGeneratingDoc(false);
+    }
+  };
   const handleGenerateRincian = async (options: RincianBiayaGenerationOptions) => {
     if (!docModal.item) return;
 
@@ -333,6 +352,13 @@ export function DataPrimerListPage() {
         </div>
       </Modal>
 
+      <SPPDGenerationModal
+        isOpen={sppdModalOpen}
+        data={docModal.item}
+        onClose={() => setSppdModalOpen(false)}
+        onGenerate={handleGenerateSPPD}
+        loading={generatingDoc}
+      />
       <RincianBiayaGenerationModal
         isOpen={rincianModalOpen}
         data={docModal.item}

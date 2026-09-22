@@ -186,44 +186,72 @@ export async function generateDaftarPengeluaranRiil(
   }
 }
 
+export interface PengikutItem {
+  Nama: string;
+  Tanggal_Lahir: string;
+  Hubungan_Keluarga: string;
+}
+
+export interface SPPDGenerationOptions {
+  Instansi?: string;
+  Mata_Anggaran?: string;
+  Keterangan_Lain?: string;
+  Pengikut?: PengikutItem[];
+}
+
 export async function generateSPPD(
   data: DataPrimer,
   pejabatList: MasterPejabat[],
+  options: SPPDGenerationOptions = {}
 ): Promise<void> {
-  const kpa = getPejabatByRole(pejabatList, 'kpa');
+  console.log('[documentService] generateSPPD START', { dataId: data.id, nama: data.Nama_Pegawai });
+
   const ppk = getPejabatByRole(pejabatList, 'ppk');
+  console.log('[documentService] PPK found:', ppk ? { nama: ppk.nama, nip: ppk.nip } : 'NOT FOUND');
 
   const lamaPerjalanan = hitungLamaPerjalanan(data.Tanggal_Berangkat, data.Tanggal_Kembali);
 
   const templateData = {
+    // Shared fields
     No_Urut_SPPD: data.No_Urut_SPPD,
-    Bulan_Kegiatan: data.Bulan_Kegiatan,
-    Tahun_Kegiatan: data.Tahun_Kegiatan,
+    Pada_tanggal: formatTanggalIndonesia(data.Pada_tanggal),
+    Tempat_tanggal: `Surabaya, ${formatTanggalIndonesia(data.Pada_tanggal)}`,
     Nama_Pegawai: data.Nama_Pegawai,
     NIP_Pegawai: data.NIP_Pegawai,
-    Pangkat_dan_Golongan: data.Pangkat_dan_Golongan,
     Jabatan_Pegawai: data.Jabatan_Pegawai,
-    Tingkat_Menurut_Peraturan: data.Tingkat_Menurut_Peraturan,
-    Maksud_Perjalanan_Dinas: data.Maksud_Perjalanan_Dinas,
-    Berangkat_dari: data.Berangkat_dari,
-    Tujuan: data.Tujuan,
-    Tanggal_Berangkat: formatTanggalIndonesia(data.Tanggal_Berangkat),
-    Tanggal_Kembali: formatTanggalIndonesia(data.Tanggal_Kembali),
-    Pada_tanggal: formatTanggalIndonesia(data.Pada_tanggal),
-    Alat_Angkutan: 'Kendaraan dinas',
-    Lamanya_Perjalanan: `${lamaPerjalanan} hari`,
-    Nama_Produsen: data.Nama_Produsen,
-    Jabatan_Produsen: data.Jabatan_Produsen,
-    NIP_Produsen: data.NIP_Produsen || '-',
-    KPA_Nama: kpa?.nama || '',
-    KPA_NIP: kpa?.nip || '',
-    KPA_Jabatan: kpa?.jabatan_lengkap || '',
     PPK_Nama: ppk?.nama || '',
     PPK_NIP: ppk?.nip || '',
-    PPK_Jabatan: ppk?.jabatan_lengkap || '',
+
+    // SPPD Depan specific fields
+    Pangkat_Golongan: data.Pangkat_dan_Golongan,
+    Tingkat_Perjalanan: data.Tingkat_Menurut_Peraturan,
+    Maksud_Perjalanan: data.Maksud_Perjalanan_Dinas,
+    Alat_Angkutan: 'Kendaraan dinas',
+    Tempat_Berangkat: data.Berangkat_dari,
+    Tempat_Tujuan: data.Tujuan,
+    Lama_Perjalanan: `${lamaPerjalanan} hari`,
+    Tanggal_Berangkat: formatTanggalIndonesia(data.Tanggal_Berangkat),
+    Tanggal_Kembali: formatTanggalIndonesia(data.Tanggal_Kembali),
+    Instansi: options.Instansi || '',
+    Mata_Anggaran: options.Mata_Anggaran || '',
+    Keterangan_Lain: options.Keterangan_Lain || '',
+    Pengikut: options.Pengikut || [],
   };
 
-  await generateAndDownload('sppd.docx', templateData, `SPPD_${data.Nama_Pegawai}_${data.No_Urut_SPPD}.docx`);
+  console.log('[documentService] generateSPPD templateData:', JSON.stringify(templateData, null, 2));
+
+  try {
+    await generateAndDownload(
+      'SPPD_final.docx',
+      templateData,
+      `SPPD_${data.Nama_Pegawai}_${data.No_Urut_SPPD}.docx`,
+      ['+++', '+++'],
+    );
+    console.log('[documentService] generateSPPD SUCCESS');
+  } catch (error) {
+    console.error('[documentService] generateSPPD ERROR:', error);
+    throw error;
+  }
 }
 
 export async function generateRekapModel3(

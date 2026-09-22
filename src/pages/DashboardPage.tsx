@@ -38,9 +38,13 @@ export function DashboardPage() {
 
   const stats = useMemo(() => {
     const total = data.length;
-    const pending = 3;
-    const approved = total - pending;
-    return { total, pending, approved };
+    const totalBiaya = data.reduce((sum, item) => sum + (item.Jumlah_Uang || 0), 0);
+    const currentMonth = new Date().getMonth();
+    const perjalananBulanIni = data.filter((item) => {
+      const date = item.Pada_tanggal instanceof Date ? item.Pada_tanggal : new Date(item.Pada_tanggal as string);
+      return date.getMonth() === currentMonth;
+    }).length;
+    return { total, totalBiaya, perjalananBulanIni };
   }, [data]);
 
   const chartData = useMemo(() => {
@@ -112,27 +116,25 @@ export function DashboardPage() {
           isLoading={loading}
         />
         <StatCard
-          label="Menunggu Approval"
-          value={loading ? '...' : stats.pending}
+          label="Total Realisasi Biaya"
+          value={loading ? '...' : `Rp ${stats.totalBiaya.toLocaleString('id-ID')}`}
           icon={
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           }
-          badge={{ text: `${stats.pending}`, variant: 'warning' }}
-          color="amber"
+          color="emerald"
           isLoading={loading}
         />
         <StatCard
-          label="Disetujui / Selesai"
-          value={loading ? '...' : stats.approved}
+          label="Perjalanan Bulan Ini"
+          value={loading ? '...' : stats.perjalananBulanIni}
           icon={
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           }
-          badge={{ text: `${stats.approved}`, variant: 'success' }}
-          color="emerald"
+          color="blue"
           isLoading={loading}
         />
       </div>
@@ -147,17 +149,6 @@ export function DashboardPage() {
           Buat SPPD Baru
         </button>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/admin/users')}
-            className="flex items-center gap-2 rounded-xl border border-white/20 dark:border-white/10 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:shadow-md transition-shadow"
-          >
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-yellow-100 dark:bg-yellow-900/30">
-              <svg className="h-4 w-4 text-yellow-700 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </span>
-            Persetujuan Pending
-          </button>
           <button
             onClick={() => navigate('/dokumen/rekap')}
             className="flex items-center gap-2 rounded-xl border border-white/20 dark:border-white/10 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:shadow-md transition-shadow"
