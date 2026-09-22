@@ -97,11 +97,13 @@ export async function generateRincianBiaya(
   const sisaTelahDibayarSemula = options.sisaTelahDibayarSemula ?? 0;
   const sisaKurangLebih = jumlahTotal - (yangTelahDibayarSemula + sisaTelahDibayarSemula);
 
+  const formatAngka = (num: number) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
   const templateData = {
     No_Urut_SPPD: data.No_Urut_SPPD,
     Pada_tanggal: formatTanggalIndonesia(data.Pada_tanggal),
     Tempat_tanggal: `Surabaya, ${formatTanggalIndonesia(data.Pada_tanggal)}`,
-    Jumlah_Total: jumlahTotal,
+    Jumlah_Total: formatAngka(jumlahTotal),
     Jumlah_Terbilang: terbilang(jumlahTotal),
     Nama_Pegawai: data.Nama_Pegawai,
     NIP_Pegawai: data.NIP_Pegawai,
@@ -109,11 +111,14 @@ export async function generateRincianBiaya(
     PPK_NIP: ppk?.nip || '',
     Bendahara_Nama: bendahara?.nama || '',
     Bendahara_NIP: bendahara?.nip || '',
-    Ditetapkan_Sejumlah: jumlahTotal,
-    Yang_Telah_Dibayar_Semula: yangTelahDibayarSemula,
-    Sisa_Telah_Dibayar_Semula: sisaTelahDibayarSemula,
-    Sisa_Kurang_Lebih: sisaKurangLebih,
-    items,
+    Ditetapkan_Sejumlah: formatAngka(jumlahTotal),
+    Yang_Telah_Dibayar_Semula: formatAngka(yangTelahDibayarSemula),
+    Sisa_Telah_Dibayar_Semula: formatAngka(sisaTelahDibayarSemula),
+    Sisa_Kurang_Lebih: formatAngka(sisaKurangLebih),
+    items: items.map(item => ({
+      ...item,
+      jumlah: formatAngka(item.jumlah || 0)
+    })),
   };
 
   console.log('[documentService] generateRincianBiaya templateData:', JSON.stringify(templateData, null, 2));
