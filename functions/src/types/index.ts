@@ -13,6 +13,8 @@ export interface DataPrimer {
   NIP_Produsen: string | null;
   Nomor_SPT: string;
   No_Urut_SPPD: number;
+  Nomor_DIPA: string;
+  Tgl_Dipa: Timestamp | Date | string;
   Bulan_Kegiatan: string;
   Tahun_Kegiatan: string;
   Nama_Pegawai: string;
@@ -58,6 +60,10 @@ export interface RekapModel3Item {
   Tujuan: string;
   Pada_tanggal: string;
   Kode_Kegiatan: string;
+  Kategori_DL: string;
+  Kegiatan: string;
+  Nomor_Dipa: string;
+  Tgl_Dipa: string;
   entries: {
     Nama_Pegawai: string;
     Jumlah_Uang: number;

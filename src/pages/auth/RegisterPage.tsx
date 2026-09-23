@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Card } from '../../components/ui/Card';
+import { getWilayahKerjaSelectOptionsFull } from '../../config/wilayahKerja';
 
 export function RegisterPage() {
   const [nama, setNama] = useState('');
@@ -86,12 +87,7 @@ export function RegisterPage() {
             placeholder="-- Pilih Wilayah Kerja --"
             value={wilayahKerja}
             onChange={(e) => setWilayahKerja(e.target.value)}
-            options={[
-              { value: '1', label: 'Wilayah Kerja I' },
-              { value: '2', label: 'Wilayah Kerja II' },
-              { value: '3', label: 'Wilayah Kerja III' },
-              { value: '4', label: 'Wilayah Kerja IV - Malang' },
-            ]}
+            options={getWilayahKerjaSelectOptionsFull()}
             required
           />
           <Input

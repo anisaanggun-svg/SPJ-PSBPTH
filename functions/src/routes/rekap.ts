@@ -59,6 +59,10 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
         Tujuan: string;
         Pada_tanggal: string;
         Kode_Kegiatan: string;
+        Kategori_DL: string;
+        Kegiatan: string;
+        Nomor_Dipa: string;
+        Tgl_Dipa: string;
         entries: { Nama_Pegawai: string; Jumlah_Uang: number }[];
         total: number;
       }
@@ -97,6 +101,10 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
       Tujuan: group.Tujuan,
       Pada_tanggal: group.Pada_tanggal,
       Kode_Kegiatan: group.Kode_Kegiatan,
+      Kategori_DL: group.Kategori_DL,
+      Kegiatan: group.Kegiatan,
+      Nomor_Dipa: group.Nomor_Dipa,
+      Tgl_Dipa: group.Tgl_Dipa,
       entries: group.entries,
       total: group.total,
     }));

@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
+import { getWilayahKerjaLabel, TOTAL_WILAYAH_KERJA } from '../../config/wilayahKerja';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -40,7 +41,7 @@ export function LoginPage() {
             SPPD App
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            UPT PSBTPH — Wilayah Kerja IV Malang
+            UPT PSBTPH — {getWilayahKerjaLabel(TOTAL_WILAYAH_KERJA) || `Wilayah Kerja ${TOTAL_WILAYAH_KERJA}`}
           </p>
         </div>
 

@@ -18,6 +18,7 @@ import {
 } from '../../services/adminService';
 import { useAuth } from '../../contexts/AuthContext';
 import type { UserProfile } from '../../types';
+import { getWilayahKerjaSelectOptions, getWilayahKerjaLabel } from '../../config/wilayahKerja';
 
 const ROLE_OPTIONS = [
   { value: 'admin', label: 'Admin' },
@@ -31,10 +32,9 @@ const STATUS_FILTER_OPTIONS = [
   { value: 'rejected', label: 'Rejected' },
 ];
 
-const WILAYAH_OPTIONS = Array.from({ length: 20 }, (_, i) => ({
-  value: String(i + 1),
-  label: `WK ${i + 1}`,
-}));
+// Gunakan konfigurasi terpusat dari src/config/wilayahKerja.ts
+// Jika jumlah wilayah kerja bertambah di masa depan, cukup update file config tersebut saja.
+const WILAYAH_OPTIONS = getWilayahKerjaSelectOptions();
 
 export function UserManagementPage() {
   const { userProfile: currentUserProfile } = useAuth();
@@ -230,7 +230,7 @@ export function UserManagementPage() {
     {
       key: 'wilayah_kerja',
       header: 'Wilayah Kerja',
-      render: (item: UserProfile) => `WK ${item.wilayah_kerja}`,
+      render: (item: UserProfile) => getWilayahKerjaLabel(item.wilayah_kerja) || `WK ${item.wilayah_kerja}`,
     },
     {
       key: 'status',
@@ -280,7 +280,7 @@ export function UserManagementPage() {
     {
       key: 'wilayah_kerja',
       header: 'Wilayah Kerja',
-      render: (item: UserProfile) => `WK ${item.wilayah_kerja}`,
+      render: (item: UserProfile) => getWilayahKerjaLabel(item.wilayah_kerja) || `WK ${item.wilayah_kerja}`,
     },
     {
       key: 'status',

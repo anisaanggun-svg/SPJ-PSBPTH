@@ -5,6 +5,8 @@ import { formatTanggalIndonesia, hitungLamaPerjalanan } from '../utils/dateHelpe
 import { formatRupiahManual } from '../utils/formatCurrency';
 import { terbilang } from '../utils/terbilang';
 import { getPejabatByRole } from './masterPejabatService';
+import { KODE_KOMODITAS, KATEGORI_DL } from '../constants/masterData';
+import type { KodKomoditas } from '../types';
 
 export interface RincianBiayaItem {
   no: number;
@@ -254,6 +256,12 @@ export async function generateSPPD(
   }
 }
 
+function hitungMAK(kodeKegiatan: string, kategoriDL: string): string {
+  const komoditas = KODE_KOMODITAS.find((k: KodKomoditas) => k.kode === kodeKegiatan);
+  const kodKomoditas = komoditas?.kode || '';
+  return `${kodKomoditas}.${kodeKegiatan}/${kategoriDL}`;
+}
+
 export async function generateRekapModel3(
   rekapData: RekapModel3Item[],
   pejabatList: MasterPejabat[],
@@ -274,6 +282,11 @@ export async function generateRekapModel3(
       Tujuan: item.Tujuan,
       Pada_tanggal: item.Pada_tanggal,
       Kode_Kegiatan: item.Kode_Kegiatan,
+      Kategori_DL: item.Kategori_DL,
+      Kegiatan: item.Kegiatan,
+      MAK: hitungMAK(item.Kode_Kegiatan, item.Kategori_DL),
+      Nomor_Dipa: item.Nomor_Dipa,
+      Tgl_Dipa: item.Tgl_Dipa,
       entries: item.entries,
       total: formatRupiahManual(item.total),
     })),
@@ -284,5 +297,5 @@ export async function generateRekapModel3(
     Pengkompulir_NIP: pengkompulir?.nip || '',
   };
 
-  await generateAndDownload('rekap_model3.docx', templateData, `Rekap_Model3_${bulanKegiatan}_${tahunKegiatan}.docx`);
+  await generateAndDownload('rekap_model3.docx', templateData, `Rekap_Model3_${bulanKegiatan}_${tahunKegiatan}.docx`, ['+++', '+++']);
 }

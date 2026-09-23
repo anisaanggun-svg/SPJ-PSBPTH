@@ -205,6 +205,12 @@ export function DataPrimerListPage() {
 
   const columns = [
     { key: 'No', header: 'No', render: (_item: DataPrimer, index: number) => (currentPage - 1) * PAGE_LIMIT + index + 1 },
+    { key: 'Nomor_DIPA', header: 'No. DIPA', render: (item: DataPrimer) => item.Nomor_DIPA || '-' },
+    { key: 'Tgl_Dipa', header: 'Tgl. DIPA', render: (item: DataPrimer) => {
+        if (!item.Tgl_Dipa) return '-';
+        try { return formatTanggalIndonesia(item.Tgl_Dipa); } catch { return '-'; }
+      },
+    },
     { key: 'Nama_Pegawai', header: 'Nama Pegawai', render: (item: DataPrimer) => item.Nama_Pegawai },
     {
       key: 'Pada_tanggal',

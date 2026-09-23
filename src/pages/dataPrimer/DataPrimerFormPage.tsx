@@ -35,6 +35,8 @@ export function DataPrimerFormPage() {
     NIP_Produsen: '',
     Nomor_SPT: '',
     No_Urut_SPPD: 0,
+    Nomor_DIPA: '',
+    Tgl_Dipa: '',
     Bulan_Kegiatan: '',
     Tahun_Kegiatan: '',
     Nama_Pegawai: '',
@@ -74,6 +76,8 @@ export function DataPrimerFormPage() {
           NIP_Produsen: existing.NIP_Produsen || '',
           Nomor_SPT: existing.Nomor_SPT,
           No_Urut_SPPD: existing.No_Urut_SPPD,
+          Nomor_DIPA: existing.Nomor_DIPA || '',
+          Tgl_Dipa: formatDateForInput(existing.Tgl_Dipa),
           Bulan_Kegiatan: existing.Bulan_Kegiatan,
           Tahun_Kegiatan: existing.Tahun_Kegiatan,
           Nama_Pegawai: existing.Nama_Pegawai,
@@ -127,6 +131,7 @@ export function DataPrimerFormPage() {
         Wilayah_Kerja: userProfile.wilayah_kerja,
         NIP_Produsen: form.NIP_Produsen || null,
         Pada_tanggal: new Date(form.Pada_tanggal).toISOString(),
+        Tgl_Dipa: form.Tgl_Dipa ? new Date(form.Tgl_Dipa).toISOString() : '',
         Tanggal_Berangkat: new Date(form.Tanggal_Berangkat).toISOString(),
         Tanggal_Kembali: new Date(form.Tanggal_Kembali).toISOString(),
         Terbilang: terbilang(form.Jumlah_Uang),
@@ -206,6 +211,21 @@ export function DataPrimerFormPage() {
               type="number"
               value={form.No_Urut_SPPD}
               onChange={(e) => handleChange('No_Urut_SPPD', parseInt(e.target.value) || 0)}
+              required
+            />
+            <Input
+              label="Nomor DIPA"
+              type="text"
+              placeholder="Masukkan Nomor DIPA"
+              value={form.Nomor_DIPA}
+              onChange={(e) => handleChange('Nomor_DIPA', e.target.value)}
+              required
+            />
+            <Input
+              label="Tgl DIPA"
+              type="date"
+              value={form.Tgl_Dipa}
+              onChange={(e) => handleChange('Tgl_Dipa', e.target.value)}
               required
             />
             <Select
